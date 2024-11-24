@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "133381052742",
+    "project_id": "twokong-182bd",
+    "storage_bucket": "twokong-182bd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:133381052742:android:aef0c60c18de24508c6d47",
+        "android_client_info": {
+          "package_name": "com.company.twokong"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKPZsgnIm_P6MkQE-FM7ZVIJeQu4nEU-M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:133381052742:android:9806215715f29aab8c6d47",
+        "android_client_info": {
+          "package_name": "com.twokong.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKPZsgnIm_P6MkQE-FM7ZVIJeQu4nEU-M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
