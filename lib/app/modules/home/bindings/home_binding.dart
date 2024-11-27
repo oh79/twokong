@@ -1,11 +1,14 @@
 import 'package:get/get.dart';
 import '../controllers/home_controller.dart';
-import '../../../core/services/ai_service.dart';
+import '../../../data/repositories/policy_repository.dart';
 
 class HomeBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut(() => AiService());
-    Get.lazyPut(() => HomeController());
+    if (!Get.isRegistered<PolicyRepository>()) {
+      Get.put(PolicyRepository());
+    }
+
+    Get.lazyPut<HomeController>(() => HomeController());
   }
 }

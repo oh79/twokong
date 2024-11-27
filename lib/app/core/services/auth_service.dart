@@ -3,29 +3,29 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:twokong/app/data/models/user_model.dart';
-import 'package:twokong/app/routes/app_pages.dart';
+import 'package:twokong/app/routes/app_routes.dart';
 import 'package:twokong/app/modules/auth/exceptions/custom_auth_exception.dart';
 
 class AuthService extends GetxService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final Rx<User?> user = Rx<User?>(null);
+  bool _isHandlingAuth = false;
 
   @override
   void onInit() {
     super.onInit();
-    _auth.signOut().then((_) {
-      _auth.authStateChanges().listen((User? u) {
-        user.value = u;
-        debugPrint('사용자 상태 변경: ${u?.uid}');
-        if (u != null && Get.currentRoute == AppRoutes.auth) {
-          Get.offAllNamed(AppRoutes.home);
-        }
-      });
+    _auth.authStateChanges().listen((User? u) {
+      user.value = u;
+      debugPrint('사용자 상태 변경: ${u?.uid}');
+
+      if (!_isHandlingAuth && u != null && Get.currentRoute == AppRoutes.auth) {
+        Get.offAllNamed(AppRoutes.home);
+      }
     });
   }
 
-  Future<void> signUp(String email, String password) async {
+  Future<User?> signUp(String email, String password) async {
     try {
       final authResult = await _auth.createUserWithEmailAndPassword(
         email: email,
@@ -46,9 +46,30 @@ class AuthService extends GetxService {
           .doc(authResult.user!.uid)
           .set(userModel.toFirestore());
 
-      Get.offAllNamed(AppRoutes.home);
+      return authResult.user;
     } catch (e) {
       debugPrint('회원가입 실패: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateUserSurvey(
+    String uid, {
+    required String nickname,
+    required int age,
+    required String occupation,
+    required List<String> stressFactors,
+  }) async {
+    try {
+      await _firestore.collection('users').doc(uid).update({
+        'nickname': nickname,
+        'age': age,
+        'occupation': occupation,
+        'stressFactors': stressFactors,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      debugPrint('사용자 설문 정보 업데이트 실패: $e');
       rethrow;
     }
   }
@@ -65,6 +86,8 @@ class AuthService extends GetxService {
 
   Future<void> signIn(String email, String password) async {
     try {
+      _isHandlingAuth = true;
+
       final authResult = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
@@ -76,24 +99,25 @@ class AuthService extends GetxService {
         'lastLoginAt': FieldValue.serverTimestamp(),
       });
 
-      Get.offAllNamed(AppRoutes.home);
-    } on FirebaseAuthException catch (e) {
-      debugPrint('Firebase 로그인 오류: ${e.code}');
-      switch (e.code) {
-        case 'user-not-found':
-          throw CustomAuthException('존재하지 않는 계정입니다');
-        case 'wrong-password':
-          throw CustomAuthException('비밀번호가 일치하지 않습니다');
-        case 'user-disabled':
-          throw CustomAuthException('비활성화된 계정입니다');
-        case 'invalid-email':
-          throw CustomAuthException('올바르지 않은 이메일 형식입니다');
-        default:
-          throw CustomAuthException('로그인 중 오류가 발생했습니다');
-      }
+      await Get.offAllNamed(AppRoutes.home);
     } catch (e) {
       debugPrint('로그인 실패: $e');
       rethrow;
+    } finally {
+      _isHandlingAuth = false;
+    }
+  }
+
+  Future<UserModel?> getUserData(String uid) async {
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+      if (doc.exists && doc.data() != null) {
+        return UserModel.fromMap(doc.data()!);
+      }
+      return null;
+    } catch (e) {
+      debugPrint('사용자 데이터 가져오기 실패: $e');
+      return null;
     }
   }
 }

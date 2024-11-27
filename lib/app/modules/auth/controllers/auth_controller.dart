@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../core/services/auth_service.dart';
 import '../exceptions/custom_auth_exception.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../../routes/app_routes.dart';
 
 class AuthController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
@@ -85,10 +86,15 @@ class AuthController extends GetxController {
 
   Future<void> _handleSignUp() async {
     try {
-      await _authService.signUp(
+      final user = await _authService.signUp(
         emailController.text.trim(),
         passwordController.text,
       );
+
+      if (user != null) {
+        // 설문 화면으로 이동하면서 uid 전달
+        Get.offNamed(AppRoutes.survey, arguments: user.uid);
+      }
     } on FirebaseAuthException catch (e) {
       debugPrint('Firebase 인증 오류: ${e.code}');
       throw CustomAuthException(_getErrorMessage(e.code));

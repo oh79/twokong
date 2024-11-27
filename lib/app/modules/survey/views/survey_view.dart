@@ -14,30 +14,24 @@ class SurveyView extends GetView<SurveyController> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
+          onPressed: controller.onBackPressed,
         ),
-        title: Obx(() => Text('${controller.currentStep.value + 1}/3')),
+        title: Obx(() => Text('${controller.currentStep.value + 1}/4')),
       ),
       body: SafeArea(
         child: Column(
           children: [
             _buildProgressBar(),
             Expanded(
-              child: Container(
-                margin: const EdgeInsets.only(top: 16),
-                decoration: const BoxDecoration(
-                  color: AppTheme.surfaceColor,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                ),
-                child: PageView(
-                  controller: controller.pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    _buildAgeStep(),
-                    _buildOccupationStep(),
-                    _buildStressFactorsStep(),
-                  ],
-                ),
+              child: PageView(
+                controller: controller.pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  _buildNicknameStep(),
+                  _buildAgeStep(),
+                  _buildOccupationStep(),
+                  _buildStressFactorsStep(),
+                ],
               ),
             ),
           ],
@@ -48,7 +42,7 @@ class SurveyView extends GetView<SurveyController> {
 
   Widget _buildProgressBar() {
     return Obx(() {
-      final progress = (controller.currentStep.value + 1) / 3;
+      final progress = (controller.currentStep.value + 1) / 4;
       return Container(
         height: 4,
         margin: const EdgeInsets.symmetric(horizontal: 24),
@@ -70,6 +64,25 @@ class SurveyView extends GetView<SurveyController> {
     });
   }
 
+  Widget _buildNicknameStep() {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TossInputField(
+            label: '닉네임을 입력해주세요',
+            hint: '다른 사용자에게 보여질 이름입니다',
+            controller: controller.nicknameController,
+            maxLength: 10,
+          ),
+          const Spacer(),
+          _buildNextButton('다음'),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAgeStep() {
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -81,6 +94,7 @@ class SurveyView extends GetView<SurveyController> {
             hint: '맞춤 정책을 추천해드릴게요',
             controller: controller.ageController,
             keyboardType: TextInputType.number,
+            maxLength: 3,
           ),
           const Spacer(),
           _buildNextButton('다음'),
@@ -234,6 +248,7 @@ class SurveyView extends GetView<SurveyController> {
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
       ),
