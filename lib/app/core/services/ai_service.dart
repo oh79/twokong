@@ -1,28 +1,25 @@
 import 'package:get/get.dart';
-import '../../data/models/policy_model.dart';
 import '../../data/repositories/policy_repository.dart';
+import '../../data/models/policy_model.dart';
 
 class AiService extends GetxService {
-  final PolicyRepository _policyRepository = Get.find();
+  final PolicyRepository _policyRepository = Get.find<PolicyRepository>();
 
   Future<List<Policy>> getRecommendedPolicies({
     required int age,
     required String occupation,
     required List<String> stressFactors,
   }) async {
-    // 연령대와 직업, 스트레스 요인을 기반으로 정책 필터링
-    final policies = await _policyRepository.getAllPolicies();
+    try {
+      // 모든 정책을 가져옵니다
+      final policies = await _policyRepository.getPolicies();
 
-    return policies.where((policy) {
-      // 연령 조건 확인
-      final isAgeMatch = policy.eligibility.contains('만 $age세');
-      // 직업 조건 확인
-      final isOccupationMatch = policy.target.contains(occupation);
-      // 스트레스 요인과 관련된 태그 확인
-      final hasMatchingTags = policy.tags
-          .any((tag) => stressFactors.any((factor) => tag.contains(factor)));
-
-      return isAgeMatch && isOccupationMatch && hasMatchingTags;
-    }).toList();
+      // 여기에 AI 추천 로직을 구현할 수 있습니다
+      // 현재는 간단히 모든 정책을 반환합니다
+      return policies;
+    } catch (e) {
+      print('정책 추천 중 오류 발생: $e');
+      return [];
+    }
   }
 }

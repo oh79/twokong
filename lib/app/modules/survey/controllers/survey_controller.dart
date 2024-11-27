@@ -74,10 +74,10 @@ class SurveyController extends GetxController {
       );
 
       // Firestore 업데이트
-      await _authService.updateUserStressFactors(
-        currentUser.uid,
-        selectedFactors,
-      );
+      // await _authService.updateUserStressFactors(
+      //   currentUser.uid,
+      //   selectedFactors,
+      // );
 
       // 홈 화면으로 이동
       Get.offAllNamed(

@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:twokong/app/core/theme/theme.dart';
 import '../controllers/home_controller.dart';
 import '../../../routes/app_pages.dart';
-import '../../../widgets/toss_card.dart';
+// import '../../../widgets/toss_card.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});

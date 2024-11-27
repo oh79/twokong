@@ -1,26 +1,35 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class UserModel {
-  final String id;
-  final String? nickname;
-  final Map<String, dynamic> jobInfo;
-  final List<String> stressFactors;
-  final List<String> favoritePolicies;
-  final DateTime createdAt;
+  final String uid;
+  final String email;
+  final DateTime? createdAt;
+  final DateTime? lastLoginAt;
 
   UserModel({
-    required this.id,
-    this.nickname,
-    required this.jobInfo,
-    required this.stressFactors,
-    required this.favoritePolicies,
-    required this.createdAt,
+    required this.uid,
+    required this.email,
+    this.createdAt,
+    this.lastLoginAt,
   });
 
-  factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
-    id: json['id'],
-    nickname: json['nickname'],
-    jobInfo: json['jobInfo'],
-    stressFactors: List<String>.from(json['stressFactors']),
-    favoritePolicies: List<String>.from(json['favoritePolicies']),
-    createdAt: DateTime.parse(json['createdAt']),
-  );
-} 
+  factory UserModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return UserModel(
+      uid: doc.id,
+      email: data['email'] ?? '',
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+      lastLoginAt: (data['lastLoginAt'] as Timestamp?)?.toDate(),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'uid': uid,
+      'email': email,
+      'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : null,
+      'lastLoginAt':
+          lastLoginAt != null ? Timestamp.fromDate(lastLoginAt!) : null,
+    };
+  }
+}

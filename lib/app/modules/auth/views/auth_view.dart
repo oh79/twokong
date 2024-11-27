@@ -16,13 +16,31 @@ class AuthView extends GetView<AuthController> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 60),
+              Image.asset(
+                'lib/app/assets/images/logo2.png',
+                height: 120,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(height: 24),
               const Text(
-                '직장인 정신건강 지원',
+                '마음피움',
                 style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
                 ),
                 textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8), // 간격 추가
+              const Text(
+                '직장인 정신건강 솔루션',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey,
+                  letterSpacing: 0.5,
+                ),
+                textAlign: TextAlign.center, // 가운데 정렬 추가
               ),
               const SizedBox(height: 40),
               _buildInputField(
@@ -38,6 +56,15 @@ class AuthView extends GetView<AuthController> {
                 label: '비밀번호',
                 obscureText: true,
               ),
+              const SizedBox(height: 16),
+              Obx(() => controller.isSignUp.value
+                  ? _buildInputField(
+                      controller: controller.confirmPasswordController,
+                      hint: '비밀번호를 다시 입력해주세요',
+                      label: '비밀번호 확인',
+                      obscureText: true,
+                    )
+                  : const SizedBox.shrink()),
               const SizedBox(height: 24),
               Obx(() => ElevatedButton(
                     onPressed: controller.isLoading.value
@@ -52,48 +79,26 @@ class AuthView extends GetView<AuthController> {
                     ),
                     child: controller.isLoading.value
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                            '로그인',
-                            style: TextStyle(
+                        : Text(
+                            controller.isSignUp.value ? '회원가입' : '로그인',
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
+                              color: Colors.white,
                             ),
                           ),
                   )),
               const SizedBox(height: 16),
-              TextButton(
-                onPressed: () => controller.toggleSignUp(),
-                child: const Text(
-                  '회원가입하기',
-                  style: TextStyle(
-                    color: AppTheme.secondaryTextColor,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              _buildDivider(),
-              const SizedBox(height: 24),
-              OutlinedButton(
-                onPressed: () async {
-                  try {
-                    await controller.signInAnonymously();
-                  } catch (e) {
-                    debugPrint('익명 로그인 에러: $e');
-                  }
-                },
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  side: const BorderSide(color: AppTheme.primaryColor),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  '익명으로 시작하기',
-                  style: TextStyle(color: AppTheme.primaryColor),
-                ),
-              ),
+              Obx(() => TextButton(
+                    onPressed: () => controller.toggleSignUp(),
+                    child: Text(
+                      controller.isSignUp.value ? '로그인하기' : '회원가입하기',
+                      style: const TextStyle(
+                        color: AppTheme.secondaryTextColor,
+                        fontSize: 14,
+                      ),
+                    ),
+                  )),
             ],
           ),
         ),
@@ -106,46 +111,36 @@ class AuthView extends GetView<AuthController> {
     required String hint,
     required String label,
     bool obscureText = false,
-    TextInputType? keyboardType,
+    TextInputType keyboardType = TextInputType.text,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppTheme.textColor,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      style: const TextStyle(
+        fontSize: 16,
+        color: Colors.black87,
+        fontWeight: FontWeight.w400,
+      ),
+      decoration: InputDecoration(
+        hintText: hint,
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.grey),
+        hintStyle: const TextStyle(color: Colors.grey),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.grey),
         ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: const TextStyle(color: AppTheme.secondaryTextColor),
-          ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppTheme.primaryColor),
         ),
-      ],
-    );
-  }
-
-  Widget _buildDivider() {
-    return const Row(
-      children: [
-        Expanded(child: Divider(color: AppTheme.secondaryTextColor)),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            '또는',
-            style: TextStyle(color: AppTheme.secondaryTextColor),
-          ),
-        ),
-        Expanded(child: Divider(color: AppTheme.secondaryTextColor)),
-      ],
+        filled: false, // filled 속성 제거
+        fillColor: Colors.transparent, // fillColor 투명하게 설정
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+      cursorColor: AppTheme.primaryColor,
     );
   }
 }
