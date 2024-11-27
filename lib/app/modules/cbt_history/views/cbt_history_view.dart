@@ -39,7 +39,7 @@ class CBTHistoryView extends GetView<CBTHistoryController> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${index + 1}번째 CBT 기록',
+                            '${controller.cbtSessions.length - index}번째 CBT 기록',
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,

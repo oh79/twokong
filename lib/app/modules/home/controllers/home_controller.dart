@@ -3,20 +3,48 @@ import 'package:get/get.dart';
 import '../../../data/models/policy_model.dart';
 import '../../../core/services/ai_service.dart';
 import '../../../core/services/auth_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../core/services/firebase_service.dart';
 
 class HomeController extends GetxController {
   final AiService _aiService = Get.find();
   final AuthService _authService = Get.find();
+  final FirebaseService _firebaseService = Get.find();
   final RxList<Policy> recommendedPolicies = <Policy>[].obs;
   final isLoading = false.obs;
   final hasError = false.obs;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final hasDoneCBTToday = false.obs;
+  final dailyFeedback = ''.obs;
 
   @override
   void onInit() {
+    debugPrint('HomeController onInit 시작');
     super.onInit();
-    _loadInitialData();
+    ever(dailyFeedback, (value) => debugPrint('피드백 변경됨: $value'));
+    _initializeDailyFeedback();
+    loadPolicies();
+    checkTodaysCBT();
+    debugPrint('HomeController onInit 완료');
+  }
+
+  void _initializeDailyFeedback() {
+    debugPrint('피드백 초기화 시작');
+    final feedbacks = [
+      '오늘도 CBT를 통해 마음 건강을 관리해보세요!',
+      '스트레스 관리의 첫 걸음, CBT와 함께 시작해보세요.',
+      '규칙적인 CBT 기록이 정신 건강 관리의 기본입니다.',
+      '오늘 하루 어떠셨나요? CBT로 마음을 정리해보세요.',
+    ];
+
+    final random = DateTime.now().millisecondsSinceEpoch % feedbacks.length;
+    debugPrint('랜덤 인덱스: $random');
+    debugPrint('선택된 피드백: ${feedbacks[random]}');
+
+    dailyFeedback(feedbacks[random]);
+    debugPrint('피드백 초기화 완료: ${dailyFeedback.value}');
+  }
+
+  void generateDailyFeedback() {
+    _initializeDailyFeedback();
   }
 
   @override
@@ -30,10 +58,7 @@ class HomeController extends GetxController {
       isLoading(true);
       hasError(false);
 
-      final policyDocs = await _firestore.collection('policies').get();
-      final policies = policyDocs.docs.map((doc) {
-        return Policy.fromFirestore(doc);
-      }).toList();
+      final policies = await _firebaseService.getPolicies().first;
 
       policies.sort((a, b) {
         if (a.deadline != null && b.deadline != null) {
@@ -141,5 +166,23 @@ class HomeController extends GetxController {
     return organization.length > 15
         ? '${organization.substring(0, 12)}...'
         : organization;
+  }
+
+  Future<void> checkTodaysCBT() async {
+    try {
+      final user = _authService.user.value;
+      if (user != null) {
+        final today = DateTime.now();
+        final startOfDay = DateTime(today.year, today.month, today.day);
+        final endOfDay = startOfDay.add(const Duration(days: 1));
+
+        final sessions = await _firebaseService.getCBTSessions(user.uid);
+        hasDoneCBTToday.value = sessions.any((session) =>
+            session.createdAt.isAfter(startOfDay) &&
+            session.createdAt.isBefore(endOfDay));
+      }
+    } catch (e) {
+      debugPrint('checkTodaysCBT 에러: $e');
+    }
   }
 }

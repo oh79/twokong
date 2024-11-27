@@ -22,6 +22,7 @@ class CBTHistoryController extends GetxController {
       final user = _authService.user.value;
       if (user != null) {
         final sessions = await _firebaseService.getCBTSessions(user.uid);
+        sessions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
         cbtSessions.value = sessions;
       }
     } catch (e) {

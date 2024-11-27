@@ -17,6 +17,6 @@ class InitialBinding implements Bindings {
     Get.put(AiService(), permanent: true);
 
     // 3. 컨트롤러 레이어
-    Get.put(HomeController());
+    Get.put(HomeController(), permanent: true);
   }
 }

@@ -130,7 +130,7 @@ class FirebaseService extends GetxService {
           .collection('users')
           .doc(uid)
           .collection('cbt_sessions')
-          .orderBy('createdAt', descending: true)
+          .orderBy('createdAt', descending: false)
           .get();
 
       return snapshot.docs.map((doc) => CBTSession.fromFirestore(doc)).toList();

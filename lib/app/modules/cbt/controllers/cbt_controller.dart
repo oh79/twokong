@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../core/services/firebase_service.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../data/models/cbt_model.dart';
+import '../../../modules/home/controllers/home_controller.dart';
 
 class CBTController extends GetxController {
   final situationController = TextEditingController();
@@ -37,6 +38,8 @@ class CBTController extends GetxController {
       await _firebaseService.saveCBTSession(session);
       Get.back();
       Get.snackbar('성공', 'CBT 세션이 저장되었습니다');
+      final homeController = Get.find<HomeController>();
+      homeController.checkTodaysCBT();
     } catch (e) {
       Get.snackbar('오류', 'CBT 세션 저장에 실패했습니다');
     }
