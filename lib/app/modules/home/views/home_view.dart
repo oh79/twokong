@@ -91,28 +91,52 @@ class HomeView extends GetView<HomeController> {
                 );
               }
 
-              return Column(
-                children: controller.recommendedPolicies.map((policy) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: TossCard(
-                      onTap: () {
-                        if (policy.id.isNotEmpty) {
-                          Get.toNamed(AppRoutes.policyDetail,
-                              arguments: policy);
-                        }
-                      },
-                      child: ListTile(
-                        title: Text(
-                          policy.title,
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        subtitle: Text(policy.organization),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              return ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: controller.recommendedPolicies.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final policy = controller.recommendedPolicies[index];
+                  return TossCard(
+                    onTap: () {
+                      if (policy.id.isNotEmpty) {
+                        Get.toNamed(AppRoutes.policyDetail, arguments: policy);
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  policy.title,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  policy.organization,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios, size: 16),
+                        ],
                       ),
                     ),
                   );
-                }).toList(),
+                },
               );
             }),
           ),

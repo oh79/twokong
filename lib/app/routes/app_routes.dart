@@ -1,8 +1,8 @@
-abstract class AppRoutes {
-  static const auth = '/auth';
-  static const home = '/home';
-  static const therapy = '/therapy';
-  static const profile = '/profile';
-  static const survey = '/survey';
-  static const policyDetail = '/policy-detail';
+class AppRoutes {
+  static const String auth = '/auth';
+  static const String home = '/home';
+  static const String therapy = '/therapy';
+  static const String profile = '/profile';
+  static const String policyDetail = '/policy-detail';
+  static const String survey = '/survey';
 }
