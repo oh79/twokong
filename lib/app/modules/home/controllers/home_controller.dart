@@ -92,6 +92,7 @@ class HomeController extends GetxController {
   }
 
   // 카테고리 포맷팅
+  // ignore: unused_element
   String _formatCategory(String category) {
     final categories = {
       '자산형성': '💰 자산형성',
@@ -104,6 +105,7 @@ class HomeController extends GetxController {
   }
 
   // 기관명 포맷팅
+  // ignore: unused_element
   String _formatOrganization(String organization) {
     return organization.length > 15
         ? '${organization.substring(0, 12)}...'

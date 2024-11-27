@@ -1,32 +1,52 @@
 import 'package:get/get.dart';
-import '../../../data/models/policy_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/services/firebase_service.dart';
+import '../../../data/models/policy_model.dart';
 
 class PolicyDetailController extends GetxController {
-  final FirebaseService _firebaseService = Get.find();
-  final policy = Rx<Policy>(Get.arguments);
+  final FirebaseService _firebaseService = Get.find<FirebaseService>();
+  final policy = Rx<Policy?>(null);
   final isFavorite = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-    _checkFavoriteStatus();
+    // Get에서 전달받은 정책 데이터 설정
+    if (Get.arguments is Policy) {
+      policy.value = Get.arguments as Policy;
+      _checkFavoriteStatus();
+    }
   }
 
   Future<void> _checkFavoriteStatus() async {
-    isFavorite.value = await _firebaseService.isPolicyFavorite(policy.value.id);
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null && policy.value != null) {
+      isFavorite.value = await _firebaseService.isPolicyFavorite(
+        user.uid,
+        policy.value!.id,
+      );
+    }
   }
 
   Future<void> toggleFavorite() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || policy.value == null) return;
+
     try {
       if (isFavorite.value) {
-        await _firebaseService.removeFromFavorites(policy.value.id);
+        await _firebaseService.removeFromFavorites(
+          user.uid,
+          policy.value!.id,
+        );
       } else {
-        await _firebaseService.savePolicyToFavorites(policy.value);
+        await _firebaseService.savePolicyToFavorites(
+          user.uid,
+          policy.value!.id,
+        );
       }
       isFavorite.toggle();
     } catch (e) {
-      Get.snackbar('오류', '즐겨찾기 처리 중 문제가 발생했습니다');
+      Get.snackbar('오류', '즐겨찾기 처리 중 오류가 발생했습니다.');
     }
   }
 

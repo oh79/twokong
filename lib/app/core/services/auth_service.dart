@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:twokong/app/data/models/user_model.dart';
 import 'package:twokong/app/routes/app_pages.dart';
+import 'package:twokong/app/modules/auth/exceptions/custom_auth_exception.dart';
 
 class AuthService extends GetxService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -12,119 +14,85 @@ class AuthService extends GetxService {
   @override
   void onInit() {
     super.onInit();
-    user.bindStream(_auth.authStateChanges());
+    _auth.signOut().then((_) {
+      _auth.authStateChanges().listen((User? u) {
+        user.value = u;
+        debugPrint('사용자 상태 변경: ${u?.uid}');
+        if (u != null && Get.currentRoute == AppRoutes.auth) {
+          Get.offAllNamed(AppRoutes.home);
+        }
+      });
+    });
   }
 
-  // 익명 로그인
-  Future<void> signInAnonymously() async {
-    try {
-      final userCredential = await _auth.signInAnonymously();
-      if (userCredential.user != null) {
-        await saveUserData(userCredential.user!);
-        await Get.offAllNamed(AppRoutes.home);
-      }
-    } catch (e) {
-      Get.snackbar('오류', '익명 로그인에 실패했습니다');
-      rethrow;
-    }
-  }
-
-  // 이메일 회원가입
   Future<void> signUp(String email, String password) async {
     try {
-      final userCredential = await _auth.createUserWithEmailAndPassword(
+      final authResult = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      if (userCredential.user != null) {
-        await saveUserData(userCredential.user!);
-        await Get.offAllNamed(AppRoutes.home);
-      }
-    } on FirebaseAuthException catch (e) {
-      String message = '회원가입에 실패했습니다';
-      if (e.code == 'email-already-in-use') {
-        message = '이미 사용 중인 이메일입니다';
-      }
-      Get.snackbar('오류', message);
-      rethrow;
-    }
-  }
+      if (authResult.user == null) throw CustomAuthException('계정 생성 실패');
 
-  // 이메일 로그인
-  Future<void> signIn(String email, String password) async {
-    try {
-      final userCredential = await _auth.signInWithEmailAndPassword(
+      final userModel = UserModel(
+        uid: authResult.user!.uid,
         email: email,
-        password: password,
+        createdAt: DateTime.now(),
+        lastLoginAt: DateTime.now(),
       );
-
-      if (userCredential.user != null) {
-        await updateLastLoginTime(userCredential.user!);
-        await Get.offAllNamed(AppRoutes.home);
-      }
-    } catch (e) {
-      Get.snackbar('오류', '로그인에 실패했습니다');
-      rethrow;
-    }
-  }
-
-  // 사용자 정보 저장
-  Future<void> saveUserData(User user) async {
-    try {
-      final userData = {
-        'email': user.email ?? '',
-        'displayName': user.displayName ?? '',
-        'photoURL': user.photoURL ?? '',
-        'phoneNumber': user.phoneNumber ?? '',
-        'authProvider': user.isAnonymous ? 'anonymous' : 'email',
-        'jobInfo': const {},
-        'stressFactors': const <String>[],
-        'favoritePolicies': const <String>[],
-      };
 
       await _firestore
           .collection('users')
-          .doc(user.uid)
-          .set(userData, SetOptions(merge: true));
+          .doc(authResult.user!.uid)
+          .set(userModel.toFirestore());
+
+      Get.offAllNamed(AppRoutes.home);
     } catch (e) {
-      debugPrint('사용자 정보 저장 실패: $e');
-      Get.snackbar('오류', '사용자 정보 저장에 실패했습니다');
+      debugPrint('회원가입 실패: $e');
       rethrow;
     }
   }
 
-  // 마지막 로그인 시간 업데이트
-  Future<void> updateLastLoginTime(User user) async {
-    try {
-      await _firestore.collection('users').doc(user.uid).update({
-        'lastLoginAt': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      debugPrint('마지막 로그인 시간 업데이트 실패: $e');
-    }
-  }
-
-  // 로그아웃
   Future<void> signOut() async {
     try {
       await _auth.signOut();
       Get.offAllNamed(AppRoutes.auth);
     } catch (e) {
-      Get.snackbar('오류', '로그아웃에 실패했습니다');
+      debugPrint('로그아웃 실패: $e');
       rethrow;
     }
   }
 
-  // 사용자의 스트레스 요인 업데이트
-  Future<void> updateUserStressFactors(
-      String uid, List<String> stressFactors) async {
+  Future<void> signIn(String email, String password) async {
     try {
-      await _firestore.collection('users').doc(uid).update({
-        'stressFactors': stressFactors,
+      final authResult = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      if (authResult.user == null) throw CustomAuthException('로그인 실패');
+
+      await _firestore.collection('users').doc(authResult.user!.uid).update({
+        'lastLoginAt': FieldValue.serverTimestamp(),
       });
+
+      Get.offAllNamed(AppRoutes.home);
+    } on FirebaseAuthException catch (e) {
+      debugPrint('Firebase 로그인 오류: ${e.code}');
+      switch (e.code) {
+        case 'user-not-found':
+          throw CustomAuthException('존재하지 않는 계정입니다');
+        case 'wrong-password':
+          throw CustomAuthException('비밀번호가 일치하지 않습니다');
+        case 'user-disabled':
+          throw CustomAuthException('비활성화된 계정입니다');
+        case 'invalid-email':
+          throw CustomAuthException('올바르지 않은 이메일 형식입니다');
+        default:
+          throw CustomAuthException('로그인 중 오류가 발생했습니다');
+      }
     } catch (e) {
-      debugPrint('스트레스 요인 업데이�� 실패: $e');
+      debugPrint('로그인 실패: $e');
       rethrow;
     }
   }
