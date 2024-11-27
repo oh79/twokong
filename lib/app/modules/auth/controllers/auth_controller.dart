@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import '../../../core/services/auth_service.dart';
 import '../exceptions/custom_auth_exception.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../../routes/app_routes.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 
 class AuthController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
@@ -85,10 +87,15 @@ class AuthController extends GetxController {
 
   Future<void> _handleSignUp() async {
     try {
-      await _authService.signUp(
+      final user = await _authService.signUp(
         emailController.text.trim(),
         passwordController.text,
       );
+
+      if (user != null) {
+        // 설문 화면으로 이동하면서 uid 전달
+        Get.offNamed(AppRoutes.survey, arguments: user.uid);
+      }
     } on FirebaseAuthException catch (e) {
       debugPrint('Firebase 인증 오류: ${e.code}');
       throw CustomAuthException(_getErrorMessage(e.code));
@@ -122,6 +129,32 @@ class AuthController extends GetxController {
     } catch (e) {
       debugPrint('로그인 실패: $e');
       rethrow;
+    }
+  }
+
+  Future<void> signUp() async {
+    try {
+      isLoading(true);
+
+      if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+        throw '이메일과 비밀번호를 입력해주세요';
+      }
+
+      await _authService.signUp(
+        emailController.text.trim(),
+        passwordController.text,
+      );
+
+      Get.offAllNamed(AppRoutes.survey);
+    } catch (e) {
+      debugPrint('회원가입 실패: $e');
+      Get.snackbar(
+        '오류',
+        '회원가입에 실패했습니다. 다시 시도해주세요.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading(false);
     }
   }
 }

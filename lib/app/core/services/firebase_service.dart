@@ -2,8 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:twokong/app/data/models/cbt_model.dart';
+import 'package:twokong/app/data/models/user_model.dart';
 import '../../../firebase_options.dart';
 import '../../data/models/policy_model.dart';
+import '../../data/models/therapy_program_model.dart';
 
 class FirebaseService extends GetxService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -57,5 +60,83 @@ class FirebaseService extends GetxService {
         .set({
       'addedAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  Future<UserModel> getUserInfo(String uid) async {
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+      return UserModel.fromFirestore(doc);
+    } catch (e) {
+      debugPrint('사용자 정보 조회 실패: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Policy>> getFavoritePolicies(String uid) async {
+    try {
+      final favoritesDoc = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('favorites')
+          .get();
+
+      final policies = <Policy>[];
+      for (var doc in favoritesDoc.docs) {
+        final policyDoc =
+            await _firestore.collection('policies').doc(doc.id).get();
+        if (policyDoc.exists) {
+          policies.add(Policy.fromFirestore(policyDoc));
+        }
+      }
+      return policies;
+    } catch (e) {
+      debugPrint('즐겨찾기 정책 조회 실패: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<TherapyProgram>> getTherapyPrograms() async {
+    try {
+      final snapshot = await _firestore.collection('therapy_programs').get();
+      return snapshot.docs
+          .map((doc) => TherapyProgram.fromFirestore(doc))
+          .toList();
+    } catch (e) {
+      debugPrint('치료 프로그램 조회 실패: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> saveCBTSession(CBTSession session) async {
+    try {
+      final docRef = _firestore
+          .collection('users')
+          .doc(session.userId)
+          .collection('cbt_sessions')
+          .doc();
+
+      await docRef.set({
+        ...session.toMap(),
+        'id': docRef.id,
+      });
+    } catch (e) {
+      throw Exception('CBT 세션 저장 실패');
+    }
+  }
+
+  Future<List<CBTSession>> getCBTSessions(String uid) async {
+    try {
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('cbt_sessions')
+          .orderBy('createdAt', descending: false)
+          .get();
+
+      return snapshot.docs.map((doc) => CBTSession.fromFirestore(doc)).toList();
+    } catch (e) {
+      debugPrint('CBT 세션 조회 실패: $e');
+      rethrow;
+    }
   }
 }

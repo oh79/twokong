@@ -17,6 +17,7 @@ class TossInputField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
     this.errorText,
+    required int maxLength,
   });
 
   @override

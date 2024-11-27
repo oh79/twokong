@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../data/models/policy_model.dart';
-import '../../routes/app_pages.dart';
+import '../../routes/app_routes.dart';
 
 class PolicyCard extends StatelessWidget {
   final Policy policy;
