@@ -41,7 +41,6 @@ class SurveyController extends GetxController {
 
   void selectOccupation(String occupation) {
     selectedOccupation.value = occupation;
-    nextStep();
   }
 
   void toggleStressFactor(String factor) {

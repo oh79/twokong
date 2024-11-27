@@ -62,4 +62,20 @@ class Policy {
       'title': title,
     };
   }
+
+  factory Policy.fromMap(Map<String, dynamic> map) {
+    return Policy(
+      id: map['id'] as String,
+      benefit: map['benefit'] as String,
+      title: map['title'] as String,
+      description: map['description'] as String,
+      category: map['category'] as String,
+      link: map['link'] as String,
+      organization: map['organization'] as String,
+      eligibility: '',
+      howToApply: '',
+      tags: [],
+      target: '',
+    );
+  }
 }

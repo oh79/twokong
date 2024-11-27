@@ -17,8 +17,9 @@ class ProfileView extends GetView<ProfileController> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildProfileSection(),
+            _buildProfileCard(),
             const SizedBox(height: 24),
             _buildMenuSection(),
           ],
@@ -27,7 +28,7 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-  Widget _buildProfileSection() {
+  Widget _buildProfileCard() {
     return Obx(() {
       final user = controller.userInfo.value;
 
@@ -79,6 +80,40 @@ class ProfileView extends GetView<ProfileController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
+          '히스토리 관리',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        TossCard(
+          onTap: () => Get.toNamed(AppRoutes.cbtHistory),
+          child: _buildMenuItem(
+            icon: Icons.psychology_outlined,
+            title: 'CBT 기록',
+            showArrow: true,
+          ),
+        ),
+        const SizedBox(height: 24),
+        const Text(
+          '관심 정책',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        TossCard(
+          onTap: () => Get.toNamed(AppRoutes.favoritePolicy),
+          child: _buildMenuItem(
+            icon: Icons.favorite_outline,
+            title: '관심 정책',
+            showArrow: true,
+          ),
+        ),
+        const SizedBox(height: 24),
+        const Text(
           '설정',
           style: TextStyle(
             fontSize: 18,
@@ -87,26 +122,28 @@ class ProfileView extends GetView<ProfileController> {
         ),
         const SizedBox(height: 16),
         TossCard(
-          onTap: () {},
+          onTap: () => Get.toNamed(AppRoutes.alarmSettings),
           child: _buildMenuItem(
-            title: '알림 설정',
             icon: Icons.notifications_outlined,
+            title: '알림 설정',
+            showArrow: true,
           ),
         ),
         const SizedBox(height: 12),
         TossCard(
-          onTap: () {},
+          onTap: () => Get.toNamed(AppRoutes.privacySettings),
           child: _buildMenuItem(
-            title: '개인정보 처리방침',
-            icon: Icons.privacy_tip_outlined,
+            icon: Icons.security_outlined,
+            title: '개인정보 관리',
+            showArrow: true,
           ),
         ),
         const SizedBox(height: 12),
         TossCard(
-          onTap: controller.handleSignOut,
+          onTap: () => controller.handleSignOut(),
           child: _buildMenuItem(
-            title: '로그아웃',
             icon: Icons.logout,
+            title: '로그아웃',
             isDestructive: true,
           ),
         ),
@@ -118,6 +155,8 @@ class ProfileView extends GetView<ProfileController> {
     required String title,
     required IconData icon,
     bool isDestructive = false,
+    bool showArrow = false,
+    Color? textColor,
   }) {
     return Row(
       children: [
@@ -134,7 +173,7 @@ class ProfileView extends GetView<ProfileController> {
           ),
         ),
         const Spacer(),
-        const Icon(Icons.arrow_forward_ios, size: 16),
+        if (showArrow) const Icon(Icons.arrow_forward_ios, size: 16),
       ],
     );
   }

@@ -24,10 +24,17 @@ void main() async {
     debugPrint('초기화 오류: $e');
   }
 
-  final initialBinding = InitialBinding();
-  await initialBinding.dependencies();
-
-  runApp(const MyApp());
+  runApp(
+    GetMaterialApp(
+      initialBinding: InitialBinding(),
+      getPages: AppPages.routes,
+      title: '마음피움',
+      theme: AppTheme.lightTheme,
+      initialRoute: AppRoutes.auth,
+      defaultTransition: Transition.fade,
+      debugShowCheckedModeBanner: false,
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

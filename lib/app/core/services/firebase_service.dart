@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:twokong/app/data/models/cbt_model.dart';
 import 'package:twokong/app/data/models/user_model.dart';
 import '../../../firebase_options.dart';
 import '../../data/models/policy_model.dart';
@@ -102,6 +103,39 @@ class FirebaseService extends GetxService {
           .toList();
     } catch (e) {
       debugPrint('치료 프로그램 조회 실패: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> saveCBTSession(CBTSession session) async {
+    try {
+      final docRef = _firestore
+          .collection('users')
+          .doc(session.userId)
+          .collection('cbt_sessions')
+          .doc();
+
+      await docRef.set({
+        ...session.toMap(),
+        'id': docRef.id,
+      });
+    } catch (e) {
+      throw Exception('CBT 세션 저장 실패');
+    }
+  }
+
+  Future<List<CBTSession>> getCBTSessions(String uid) async {
+    try {
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('cbt_sessions')
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return snapshot.docs.map((doc) => CBTSession.fromFirestore(doc)).toList();
+    } catch (e) {
+      debugPrint('CBT 세션 조회 실패: $e');
       rethrow;
     }
   }
