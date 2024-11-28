@@ -126,29 +126,35 @@ class HomeController extends GetxController {
   }
 
   Future<void> refreshPolicies({
-    int? age,
-    String? occupation,
-    List<String>? stressFactors,
-  }) async {
-    try {
-      isLoading(true);
-      final policies = await _aiService.getRecommendedPolicies(
-        age: age ?? 25,
-        occupation: occupation ?? '회사원',
-        stressFactors: stressFactors ?? ['업무과중', '대인관계'],
-      );
-      recommendedPolicies.value = policies;
-    } catch (e) {
-      hasError(true);
-      Get.snackbar('오류', '데이터를 불러오는데 실패했습니다');
-      await _loadInitialData();
-    } finally {
-      isLoading(false);
-    }
+  int? age,
+  String? occupation,
+  List<String>? stressFactors,
+}) async {
+  try {
+    isLoading(true);
+    
+    print('정책 새로고침 시작');
+    
+    final policies = await _aiService.getRecommendedPolicies(
+      age: age ?? 25,
+      occupation: occupation ?? '회사원',
+      stressFactors: stressFactors ?? ['업무과중', '대인관계'],
+    );
+
+    print('새로고침된 추천 정책 수: ${policies.length}');
+    recommendedPolicies.value = policies;
+  } catch (e) {
+    hasError(true);
+    print('정책 새로고침 중 오류: $e');
+    Get.snackbar('오류', '데이터를 불러오는데 실패했습니다');
+    await _loadInitialData();
+  } finally {
+    isLoading(false);
   }
+}
+
 
   // 카테고리 포맷팅
-  // ignore: unused_element
   String _formatCategory(String category) {
     final categories = {
       '자산형성': '💰 자산형성',
@@ -161,7 +167,6 @@ class HomeController extends GetxController {
   }
 
   // 기관명 포맷팅
-  // ignore: unused_element
   String _formatOrganization(String organization) {
     return organization.length > 15
         ? '${organization.substring(0, 12)}...'

@@ -17,7 +17,7 @@ class HomeView extends GetView<HomeController> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            await controller.loadPolicies();
+            await controller.loadPolicies(); // 정책 로드
             controller.generateDailyFeedback();
             controller.checkTodaysCBT();
           },

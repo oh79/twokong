@@ -29,6 +29,8 @@ class FirebaseService extends GetxService {
         snapshot.docs.map((doc) => Policy.fromFirestore(doc)).toList());
   }
 
+  
+
   // 정책 즐겨찾기 확인
   Future<bool> isPolicyFavorite(String userId, String policyId) async {
     final doc = await _firestore

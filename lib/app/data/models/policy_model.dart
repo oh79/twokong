@@ -29,6 +29,7 @@ class Policy {
     required this.title,
   });
 
+  // Firestore에서 데이터를 가져올 때 사용
   factory Policy.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return Policy(
@@ -47,6 +48,7 @@ class Policy {
     );
   }
 
+  // Firestore에 데이터를 저장할 때 사용
   Map<String, dynamic> toFirestore() {
     return {
       'benefit': benefit,
@@ -63,6 +65,7 @@ class Policy {
     };
   }
 
+  // Map 데이터를 Policy 객체로 변환
   factory Policy.fromMap(Map<String, dynamic> map) {
     return Policy(
       id: map['id'] as String,
@@ -76,6 +79,26 @@ class Policy {
       howToApply: '',
       tags: [],
       target: '',
+    );
+  }
+
+  // JSON 데이터를 Policy 객체로 변환하는 fromJson 메서드 추가
+  factory Policy.fromJson(Map<String, dynamic> json) {
+    return Policy(
+      id: json['id'] ?? '',
+      benefit: json['benefit'] ?? '',
+      category: json['category'] ?? '',
+      deadline: json['deadline'] != null
+          ? DateTime.parse(json['deadline'])
+          : null,
+      description: json['description'] ?? '',
+      eligibility: json['eligibility'] ?? '',
+      howToApply: json['howToApply'] ?? '',
+      link: json['link'] ?? '',
+      organization: json['organization'] ?? '',
+      tags: List<String>.from(json['tags'] ?? []),
+      target: json['target'] ?? '',
+      title: json['title'] ?? '',
     );
   }
 }
